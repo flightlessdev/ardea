@@ -1,0 +1,11 @@
+{
+  "steps": [
+    {
+      "hi": "sub1"
+    },
+    "sub_config_12.json",
+    {
+      "hi2": "sub1"
+    }
+  ]
+}
