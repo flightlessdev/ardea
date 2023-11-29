@@ -1,4 +1,5 @@
 defmodule Ardea.Configuration.Reader do
+  alias Ardea.Job
   alias Ardea.Configuration.ConfigError
   @steps_array "steps"
 
@@ -14,8 +15,8 @@ defmodule Ardea.Configuration.Reader do
     |> Stream.map(&File.read!/1)
     |> Stream.map(&Jason.decode!/1)
     |> Stream.map(&resolve_step_references(&1, config_dir))
+    |> Stream.map(&Job.validate/1)
     |> Enum.to_list()
-    |> IO.inspect()
   end
 
   defp resolve_step_references(config, config_dir) do

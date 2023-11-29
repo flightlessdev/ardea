@@ -1,7 +1,8 @@
 {
+  "name": "job2",
   "steps": [
     {
-      "hi": "conf2"
+      "type": "dummy"
     }
   ]
 }
