@@ -10,8 +10,7 @@ defmodule Ardea.Job do
     :steps
   ]
 
-  def run(%__MODULE__{name: name, steps: steps} = _job, initial) do
-    Logger.info("Starting job #{name}")
+  def run(%__MODULE__{steps: steps} = _job, initial) do
     Enum.reduce(steps, initial, &Ardea.Step.step/2)
   end
 

@@ -3,20 +3,35 @@ defmodule Ardea.Configuration.Reader do
   alias Ardea.Configuration.ConfigError
   @steps_array "steps"
 
-  def read do
+  def read_jobs do
     opts = Application.fetch_env!(:ardea, Configuration)
     config_dir = Keyword.fetch!(opts, :config_dir)
 
-    Keyword.fetch!(opts, :config_files)
+    get_json_files(opts, config_dir, :config_files)
+    |> Stream.map(&resolve_step_references(&1, config_dir))
+    |> Stream.map(&Job.validate/1)
+    |> Enum.to_list()
+    |> Enum.reduce(%{}, fn %{name: name} = job, acc ->
+      add_unique_component(name, job, acc, "job")
+    end)
+  end
+
+  defp get_json_files(opts, config_dir, key) do
+    Keyword.fetch!(opts, key)
     |> String.split(",")
     |> Enum.map(fn x -> "#{config_dir}/#{x}" end)
     |> Enum.flat_map(&Path.wildcard/1)
     |> Enum.uniq()
     |> Stream.map(&File.read!/1)
     |> Stream.map(&Jason.decode!/1)
-    |> Stream.map(&resolve_step_references(&1, config_dir))
-    |> Stream.map(&Job.validate/1)
-    |> Enum.to_list()
+  end
+
+  defp add_unique_component(name, data, map, item) do
+    if Map.has_key?(map, name) do
+      raise ConfigError, "Duplicate #{item} name '#{name}'"
+    else
+      Map.put(map, name, data)
+    end
   end
 
   defp resolve_step_references(config, config_dir) do
