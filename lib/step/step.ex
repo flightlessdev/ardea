@@ -13,8 +13,6 @@ defmodule Ardea.Step do
     module = String.downcase(type) |> Macro.camelize() |> String.to_atom()
     step_module = Module.concat(Ardea.Step, module)
     throw_if_not_loaded(step_module, type)
-    # Unsafe?
-    step = keys_to_atoms(step)
 
     with {:ok, step} <- apply(step_module, :validate, [step]) do
       step
@@ -36,9 +34,5 @@ defmodule Ardea.Step do
     else
       _ -> raise Ardea.Configuration.ConfigError, "Step type '#{type}' does not exist"
     end
-  end
-
-  defp keys_to_atoms(step) do
-    for {key, val} <- step, into: %{}, do: {String.to_atom(key), val}
   end
 end
