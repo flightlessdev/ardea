@@ -10,11 +10,9 @@ defmodule Ardea.Step do
   end
 
   def validate(%{"type" => type} = step) do
-    module = String.downcase(type) |> Macro.camelize() |> String.to_atom()
-    step_module = Module.concat(Ardea.Step, module)
-    throw_if_not_loaded(step_module, type)
-
-    with {:ok, step} <- apply(step_module, :validate, [step]) do
+    with {:ok, step_module} <-
+           Ardea.Common.Module.throw_if_not_loaded(Ardea.Step, type, process: 2, validate: 1),
+         {:ok, step} <- apply(step_module, :validate, [step]) do
       step
     else
       {:error, reason} ->
@@ -24,15 +22,4 @@ defmodule Ardea.Step do
   end
 
   def validate(_step), do: raise(Ardea.Configuration.ConfigError, "Step without type encountered")
-
-  defp throw_if_not_loaded(module, type) do
-    with {:module, module} = Code.ensure_loaded(module),
-         true <-
-           Kernel.function_exported?(module, :process, 2) &&
-             Kernel.function_exported?(module, :validate, 1) do
-      :ok
-    else
-      _ -> raise Ardea.Configuration.ConfigError, "Step type '#{type}' does not exist"
-    end
-  end
 end
