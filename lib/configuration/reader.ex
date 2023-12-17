@@ -1,7 +1,21 @@
 defmodule Ardea.Configuration.Reader do
-  alias Ardea.Job
+  alias Ardea.{Job, Service}
   alias Ardea.Configuration.ConfigError
   @steps_array "steps"
+
+  def read_services do
+    opts = Application.fetch_env!(:ardea, Configuration)
+    config_dir = Keyword.fetch!(opts, :config_dir)
+
+    get_json_files(opts, config_dir, :service_files)
+    |> Stream.flat_map(&Service.validate/1)
+    |> Enum.to_list()
+    |> Enum.reduce(%{}, fn %Ardea.Service{name: name} = service, acc ->
+      add_unique_component(name, service, acc, "service")
+    end)
+    |> Ardea.Service.register_services()
+    |> Enum.reject(&(!is_map(&1)))
+  end
 
   def read_jobs do
     opts = Application.fetch_env!(:ardea, Configuration)
