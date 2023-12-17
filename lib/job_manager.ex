@@ -20,11 +20,11 @@ defmodule Ardea.JobManager do
     {:noreply, state}
   end
 
-  def run_job(nil, name, _) do
+  defp run_job(nil, name, _) do
     Logger.error("Tried to start unknown job '#{name}'")
   end
 
-  def run_job(job, name, initial) do
+  defp run_job(job, name, initial) do
     Logger.info("Starting job #{name}")
     start = :os.system_time(:millisecond)
     Job.run(job, initial)
