@@ -24,3 +24,8 @@ ardea-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+# Nix things
+.bash_history
+.hex
+.mix
