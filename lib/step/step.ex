@@ -2,8 +2,8 @@ defmodule Ardea.Step do
   @callback validate(step :: map()) :: {:ok, step :: map()} | {:error, reason :: term}
   @callback process(data :: map(), step :: map()) :: data :: [map()]
 
-  def step(%{type: type} = step, data) do
-    # Moduel should always be valid due to validation
+  def step(%{"type" => type} = step, data) do
+    # Module should always be valid due to validation
     module = String.downcase(type) |> Macro.camelize() |> String.to_existing_atom()
     step_module = Module.concat(Ardea.Step, module)
     Enum.flat_map(data, &apply(step_module, :process, [&1, step]))
