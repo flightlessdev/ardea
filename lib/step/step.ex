@@ -8,6 +8,7 @@ defmodule Ardea.Step do
     module = String.downcase(type) |> Macro.camelize() |> String.to_existing_atom()
     step_module = Module.concat(Ardea.Step, module)
     log_step_start(step)
+    log_input_size(data)
     Enum.flat_map(data, &apply(step_module, :process, [&1, step]))
   end
 
@@ -33,4 +34,5 @@ defmodule Ardea.Step do
     do: Logger.info("Executing step '#{name}'")
 
   def log_step_start(%{type: type}), do: Logger.info("Executing unnamed '#{type}' step")
+  def log_input_size(data), do: Logger.debug("Input size #{length(data)}")
 end

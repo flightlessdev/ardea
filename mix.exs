@@ -24,7 +24,9 @@ defmodule Ardea.MixProject do
     [
       # {:dep_from_hexpm, "~> 0.3.0"},
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
-      {:jason, "~>1.4.1"}
+      {:jason, "~>1.4.1"},
+      {:exmqtt, path: "/home/erik/Projects/exmqtt"},
+      {:httpoison, "~> 2.2"}
     ]
   end
 end
