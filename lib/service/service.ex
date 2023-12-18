@@ -25,6 +25,8 @@ defmodule Ardea.Service do
     Enum.map(services, &hd(validate(&1)))
   end
 
+  def validate(%{"disabled" => true}), do: []
+
   def validate(%{"type" => type, "name" => name, "opts" => opts}) do
     Logger.info("Validating service #{name}")
 
