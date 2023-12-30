@@ -1,4 +1,5 @@
 defmodule Ardea.Service do
+  alias Ardea.Configuration.ConfigError
   require Logger
 
   def register_services(services) do
@@ -51,6 +52,27 @@ defmodule Ardea.Service do
     case :ets.lookup(__MODULE__, name) do
       [{_, %__MODULE__{module: _module}}] -> true
       _ -> false
+    end
+  end
+
+  def supports_subscription?(name) do
+    with [{_, %__MODULE__{module: module}}] <- :ets.lookup(__MODULE__, name),
+         true <-
+           Kernel.function_exported?(module, :subscribe, 2) &&
+             Kernel.function_exported?(module, :validate_subscription_opts, 1) do
+      true
+    else
+      _ -> false
+    end
+  end
+
+  def validate_subscription_opts(name, opts) do
+    with [{_, %__MODULE__{module: module}}] <- :ets.lookup(__MODULE__, name),
+         {:ok, opts} <- apply(module, :validate_subscription_opts, [opts]) do
+      opts
+    else
+      _ -> raise ConfigError, "Invalid subscription service"
+      {:error, error} -> raise ConfigError, "Invalid subscription opts. Reason: #{error}"
     end
   end
 end

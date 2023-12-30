@@ -1,5 +1,5 @@
 defmodule Ardea do
-  alias Ardea.JobManager
+  alias Ardea.{JobScheduler, JobManager}
   use Application
 
   @impl true
@@ -8,7 +8,7 @@ defmodule Ardea do
 
     jobs = Ardea.Configuration.Reader.read_jobs()
 
-    children = [{JobManager, jobs} | services]
+    children = [{JobManager, jobs}, {JobScheduler, JobScheduler.get_cron_jobs(jobs)} | services]
     opts = [strategy: :one_for_one, name: Ardea.Supervisor]
     Supervisor.start_link(children, opts)
   end

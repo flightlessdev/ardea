@@ -9,6 +9,7 @@ defmodule Ardea.JobManager do
 
   @impl true
   def init(jobs) do
+    Enum.each(jobs, &schedule_periodic_job/1)
     {:ok, %{jobs: jobs}}
   end
 
@@ -17,6 +18,8 @@ defmodule Ardea.JobManager do
     jobs = Map.get(state, :jobs)
     job = Map.get(jobs, name)
     run_job(job, name, initial)
+    # TODO: weird stuff if manual trigger of periodic job
+    schedule_periodic_job(job)
     {:noreply, state}
   end
 
@@ -39,4 +42,15 @@ defmodule Ardea.JobManager do
   def run(name, initial) when is_list(initial) do
     GenServer.cast(__MODULE__, {:run, name, initial})
   end
+
+  defp schedule_periodic_job(%Job{
+         name: name,
+         trigger: :period,
+         trigger_opts: [period: period],
+         initial_data: data
+       }) do
+    Process.send_after(__MODULE__, {:run, name, data}, period * 1000)
+  end
+
+  defp schedule_periodic_job(_), do: :ok
 end

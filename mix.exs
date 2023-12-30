@@ -27,7 +27,9 @@ defmodule Ardea.MixProject do
       {:jason, "~>1.4.1"},
       {:exmqtt, github: "TheFancyOstrich/exmqtt", branch: "feature-multiple-connection-support"},
       {:httpoison, "~> 2.2"},
-      {:instream, "~> 2.0"}
+      {:instream, "~> 2.0"},
+      {:crontab, "~> 1.1"},
+      {:quantum, "~> 3.0"}
     ]
   end
 end
