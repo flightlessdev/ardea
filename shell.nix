@@ -24,5 +24,6 @@ mkShell {
         export ERL_AFLAGS="-kernel shell_history enabled"
         mix archive.install --force github hexpm/hex tag v2.0.5
         mix local.rebar rebar3 --force ${pkgs.rebar3}/bin/rebar3
+        source .env
 '';
 }

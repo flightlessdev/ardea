@@ -26,7 +26,8 @@ defmodule Ardea.MixProject do
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
       {:jason, "~>1.4.1"},
       {:exmqtt, github: "TheFancyOstrich/exmqtt", branch: "feature-multiple-connection-support"},
-      {:httpoison, "~> 2.2"}
+      {:httpoison, "~> 2.2"},
+      {:instream, "~> 2.0"}
     ]
   end
 end
