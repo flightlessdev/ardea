@@ -8,7 +8,8 @@ defmodule Ardea do
 
     jobs = Ardea.Configuration.Reader.read_jobs()
 
-    children = [{JobManager, jobs}, {JobScheduler, JobScheduler.get_cron_jobs(jobs)} | services]
+    ## Order here matters due to job triggering
+    children = services ++ [JobScheduler, {JobManager, jobs}]
     opts = [strategy: :one_for_one, name: Ardea.Supervisor]
     Supervisor.start_link(children, opts)
   end

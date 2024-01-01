@@ -14,11 +14,12 @@ defmodule Ardea.Job do
     :steps,
     :trigger,
     :trigger_opts,
+    # Additinal data to always be added to the job
     :initial_data
   ]
 
-  def run(%__MODULE__{steps: steps} = _job, initial) do
-    Enum.reduce(steps, initial, &Ardea.Step.step/2)
+  def run(%__MODULE__{steps: steps, initial_data: initial_data} = _job, initial) do
+    Enum.reduce(steps, initial ++ initial_data, &Ardea.Step.step/2)
   end
 
   def validate(%{"name" => name, "steps" => steps, "trigger" => trigger} = job) do
@@ -47,6 +48,10 @@ defmodule Ardea.Job do
     subscription_service = Map.fetch!(job, "subscription_service")
     subscription_opts = Map.fetch!(job, "subscription_opts")
 
+    if !Ardea.Service.exist?(subscription_service) do
+      raise ConfigError, "Service #{subscription_service} does not exist"
+    end
+
     if !Ardea.Service.supports_subscription?(subscription_service) do
       raise ConfigError, "Service #{subscription_service} does not support subscriptions"
     end
@@ -54,12 +59,14 @@ defmodule Ardea.Job do
     subscription_opts =
       Ardea.Service.validate_subscription_opts(subscription_service, subscription_opts)
 
-    {:subscription, subscription_opts}
+    {:subscription,
+     [subscription_opts: subscription_opts, subscription_service: subscription_service]}
   end
 
   defp validate_trigger("schedule", job) do
-    schedule = Map.fetch!(job, "schedule")
-    Crontab.CronExpression.Parser.parse!(schedule)
+    schedule =
+      Map.fetch!(job, "schedule")
+      |> Crontab.CronExpression.Parser.parse!()
 
     {:schedule, [schedule: schedule]}
   end

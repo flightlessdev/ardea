@@ -44,19 +44,19 @@ defmodule Ardea.Service do
   end
 
   def call(input, name) do
-    [{_, %__MODULE__{module: module}}] = :ets.lookup(__MODULE__, name)
+    module = get_service_module(name)
     apply(module, :call, [input, name])
   end
 
   def exist?(name) do
-    case :ets.lookup(__MODULE__, name) do
-      [{_, %__MODULE__{module: _module}}] -> true
+    case get_service_module(name) do
+      {:ok, _} -> true
       _ -> false
     end
   end
 
   def supports_subscription?(name) do
-    with [{_, %__MODULE__{module: module}}] <- :ets.lookup(__MODULE__, name),
+    with {:ok, module} <- get_service_module(name),
          true <-
            Kernel.function_exported?(module, :subscribe, 2) &&
              Kernel.function_exported?(module, :validate_subscription_opts, 1) do
@@ -67,12 +67,24 @@ defmodule Ardea.Service do
   end
 
   def validate_subscription_opts(name, opts) do
-    with [{_, %__MODULE__{module: module}}] <- :ets.lookup(__MODULE__, name),
+    with {:ok, module} <- get_service_module(name),
          {:ok, opts} <- apply(module, :validate_subscription_opts, [opts]) do
       opts
     else
       _ -> raise ConfigError, "Invalid subscription service"
       {:error, error} -> raise ConfigError, "Invalid subscription opts. Reason: #{error}"
+    end
+  end
+
+  def subscribe(name, opts) do
+    {:ok, module} = get_service_module(name)
+    apply(module, :subscribe, [name, opts])
+  end
+
+  defp get_service_module(name) do
+    case :ets.lookup(__MODULE__, name) do
+      [{_, %__MODULE__{module: module}}] -> {:ok, module}
+      _ -> {:error, "Not found"}
     end
   end
 end
